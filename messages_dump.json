@@ -1,0 +1,37 @@
+[
+  {
+    "msg": "hi joseph",
+    "senderId": "69362b21a20d73106975f016",
+    "receiverId": "693e3fe65b79b31fcfb8bb29",
+    "roomId": "693e3fe65b79b31fcfb8bb29",
+    "role": "Admin"
+  },
+  {
+    "msg": "hi from joseph",
+    "senderId": "693e3fe65b79b31fcfb8bb29",
+    "receiverId": "69362b21a20d73106975f016",
+    "roomId": "69362b21a20d73106975f016",
+    "role": "User"
+  },
+  {
+    "msg": "hi2",
+    "senderId": "69362b21a20d73106975f016",
+    "receiverId": "6935a4b89070e081d8c9b8b9",
+    "roomId": "6935a4b89070e081d8c9b8b9",
+    "role": "Admin"
+  },
+  {
+    "msg": "hi 2",
+    "senderId": "6935a4b89070e081d8c9b8b9",
+    "receiverId": "69362b21a20d73106975f016",
+    "roomId": "69362b21a20d73106975f016",
+    "role": "User"
+  },
+  {
+    "msg": "hi 1",
+    "senderId": "69362b21a20d73106975f016",
+    "receiverId": "6935a4b89070e081d8c9b8b9",
+    "roomId": "6935a4b89070e081d8c9b8b9",
+    "role": "Admin"
+  }
+]
