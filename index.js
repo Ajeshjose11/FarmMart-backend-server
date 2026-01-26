@@ -23,9 +23,18 @@ const Users = require("./models/userModel");
 const farmmartServer = express();
 
 //7. Middlewares
-farmmartServer.use(cors());
+farmmartServer.use(
+  cors({
+    origin: "*",
+    credentials: true
+  })
+);
+
 farmmartServer.use(express.json());
 
+farmmartServer.get("/", (req, res) => {
+  res.status(200).send("FarmMart API is running");
+});
 // Serve static product images
 farmmartServer.use('/uploads/products', express.static('./uploads/products'));
 
@@ -33,7 +42,7 @@ farmmartServer.use('/uploads/products', express.static('./uploads/products'));
 farmmartServer.use(router);
 
 //9. Port
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 //10. Create HTTP server for Socket.IO use
 const server = http.createServer(farmmartServer);
@@ -93,19 +102,19 @@ io.on("connection", (socket) => {
     console.log(`Socket ${socket.id} joined user room ${userId}`);
   });
 
-const Message = require("./models/messageModel");
+  const Message = require("./models/messageModel");
 
-// ... (other imports are fine, just make sure Message is top level or imported before use)
-// Wait, I can't put require in the middle easily with replace_file_content relative to line numbers if I don't see them. 
-// I'll add the require at the top first in a separate call? 
-// No, I can just use require inside the callback or at top if I match correctly.
-// Let's add the require at line 21 (after userModel).
+  // ... (other imports are fine, just make sure Message is top level or imported before use)
+  // Wait, I can't put require in the middle easily with replace_file_content relative to line numbers if I don't see them. 
+  // I'll add the require at the top first in a separate call? 
+  // No, I can just use require inside the callback or at top if I match correctly.
+  // Let's add the require at line 21 (after userModel).
 
-// Then replace the socket handler.
+  // Then replace the socket handler.
 
 
   socket.on("sendMessage", async ({ roomId, sender, message, userId, farmerId, senderId, receiverId, role }) => {
-    
+
     // Attempt to resolve IDs for persistence
     let sId = senderId;
     let rId = receiverId;
@@ -113,63 +122,63 @@ const Message = require("./models/messageModel");
 
     // INFER SENDER ID
     if (!sId) {
-        if (sender === "User") sId = userId;
-        if (sender === "Farmer") sId = farmerId;
+      if (sender === "User") sId = userId;
+      if (sender === "Farmer") sId = farmerId;
     }
 
     // INFER RECEIVER ID & ROLE
     // Case 1: User/Farmer sending to Admin
     if (sender === "User" || sender === "Farmer") {
-        if (!rId) rId = roomId; // Default receiver is AdminID (room)
-        rRole = "Admin";
+      if (!rId) rId = roomId; // Default receiver is AdminID (room)
+      rRole = "Admin";
     }
-    
+
     // Case 2: Admin replying
     if (sender === "Admin") {
-        if (!rId) {
-             // Try to infer from context if not explicitly sent
-             if (userId) { rId = userId; rRole = "User"; }
-             else if (farmerId) { rId = farmerId; rRole = "Farmer"; }
-        } else {
-            // If explicit rId, try to guess role or usepassed role?
-            // For now, if we are in adminUserMessages, we are talking to User.
-            // If in adminFarmerMessages, we are talking to Farmer.
-            // But socket payload might not have rRole.
-            // Let's rely on the client sending correct IDs.
-            // Simplistic heuristic:
-             // Ideally we should pass receiverRole from client.
-        }
+      if (!rId) {
+        // Try to infer from context if not explicitly sent
+        if (userId) { rId = userId; rRole = "User"; }
+        else if (farmerId) { rId = farmerId; rRole = "Farmer"; }
+      } else {
+        // If explicit rId, try to guess role or usepassed role?
+        // For now, if we are in adminUserMessages, we are talking to User.
+        // If in adminFarmerMessages, we are talking to Farmer.
+        // But socket payload might not have rRole.
+        // Let's rely on the client sending correct IDs.
+        // Simplistic heuristic:
+        // Ideally we should pass receiverRole from client.
+      }
     }
-    
+
     // Fallback/Validation from client payload if available
     // We update client to send receiverRole if possible, or infer stronger here.
     // For now, let's look at the "User" vs "Farmer" logic in the Room ID or passed params.
-    
+
     // BETTER LOGIC:
     // If Admin sends to a User, the room ID is usually the UserID.
     // If Admin sends to a Farmer, the room ID is the FarmerID.
-    
+
     // If sender is Admin:
     if (sender === "Admin") {
-         if (farmerId) { rRole = "Farmer"; rId = farmerId; }
-         else if (userId) { rRole = "User"; rId = userId; }
+      if (farmerId) { rRole = "Farmer"; rId = farmerId; }
+      else if (userId) { rRole = "User"; rId = userId; }
     }
 
 
     if (sId && rId) {
-       try {
-           const newMsg = new Message({
-               senderId: sId,
-               receiverId: rId,
-               senderRole: sender, 
-               receiverRole: rRole,
-               message,
-               roomId
-           });
-           await newMsg.save();
-       } catch(e) {
-           console.error("Error saving message:", e.message);
-       }
+      try {
+        const newMsg = new Message({
+          senderId: sId,
+          receiverId: rId,
+          senderRole: sender,
+          receiverRole: rRole,
+          message,
+          roomId
+        });
+        await newMsg.save();
+      } catch (e) {
+        console.error("Error saving message:", e.message);
+      }
     }
 
     io.to(roomId).emit("receiveMessage", {
