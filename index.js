@@ -1,4 +1,4 @@
-//1. Import express
+require('dotenv').config();
 const express = require('express');
 
 //2. Import DB
@@ -25,10 +25,15 @@ const farmmartServer = express();
 //7. Middlewares
 farmmartServer.use(
   cors({
-    origin: "*",
+    origin: ["http://localhost:5173", "https://farm-mart-frontend.vercel.app"],
     credentials: true
   })
 );
+
+farmmartServer.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  next();
+});
 
 farmmartServer.use(express.json());
 
@@ -50,7 +55,7 @@ const server = http.createServer(farmmartServer);
 //11. Attach Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: "*"
+    origin: ["http://localhost:5173", "https://farm-mart-frontend.vercel.app"]
   }
 });
 
